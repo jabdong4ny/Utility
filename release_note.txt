@@ -1,0 +1,12 @@
+﻿2019.01.03 v1.0  - SOS & ACN Trigger 기능 추가
+		 - DCM volume 조절 기능 추가
+		 - Data & Voice 연결 상태 monitoring 기능 추가
+
+2018.12.18 v0.3  - SOS & ACN reset command를 추가
+		 - Shoulder Tap 기능 추가
+
+2018.11.30 v0.2  - setting 파일을 ini 파일로 교체
+
+2018.11.23 v0.1  - TSP preCondition Setting 추가
+
+2018.11.06 Draft - SOS preCondtion Setting Function 추가

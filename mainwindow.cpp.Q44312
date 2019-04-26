@@ -1,0 +1,335 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include "volume.h"
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    QWidget *widget = new QWidget;
+    setCentralWidget(widget);
+
+    QWidget *topFiller = new QWidget;
+    topFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    textEdit = new QTextEdit(this);
+
+    m_process = new QProcess(this);
+    m_process->setWorkingDirectory(qApp->applicationDirPath());
+    connect(m_process, SIGNAL(readyReadStandardOutput()), this, SLOT(setStdout()) );
+    textEdit->setReadOnly(true);
+
+    infoLabel = new QLabel(tr("<i>Choose a menu option to "
+                            "invoke a context menu</i>"));
+    infoLabel->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+    infoLabel->setAlignment(Qt::AlignCenter);
+
+    QWidget *bottomFiller = new QWidget;
+    bottomFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setMargin(5);
+    layout->addWidget(topFiller);
+    layout->addWidget(textEdit);
+    layout->addWidget(infoLabel);
+    layout->addWidget(bottomFiller);
+    widget->setLayout(layout);
+
+    createActions();
+    createMenus();
+
+    QString message = tr("A context menu is available by right-clicking");
+    statusBar()->showMessage(message);
+
+    setWindowTitle(tr("[TBOX] Developer Utility v0.1"));
+    setMinimumSize(160, 160);
+    resize(480, 320);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+
+#ifndef QT_NO_CONTEXTMENU
+void MainWindow::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu menu(this);
+    menu.addAction(provisionAct);
+    menu.addAction(copyAct);
+    menu.exec(event->globalPos());
+}
+#endif // QT_NO_CONTEXTMENU
+
+void MainWindow::setStdout()
+{
+    //qDebug() << "readStdout =" << m_process->readAllStandardOutput();
+    //qDebug() << "readStError =" << m_process->readAllStandardError();
+    textEdit->append(QString::fromLocal8Bit(m_process->readAllStandardOutput() + m_process->readAllStandardError()));
+
+}
+
+void MainWindow::newFile()
+{
+    infoLabel->setText(tr("Invoked <b>File|New</b>"));
+}
+
+void MainWindow::open()
+{
+    infoLabel->setText(tr("Invoked <b>File|Open</b>"));
+}
+
+void MainWindow::save()
+{
+    infoLabel->setText(tr("Invoked <b>File|Save</b>"));
+}
+
+void MainWindow::print()
+{
+    infoLabel->setText(tr("Invoked <b>File|Print</b>"));
+}
+
+void MainWindow::command(QString comm){
+    QString strCommand;
+    if(QSysInfo::productType()=="windows")
+        strCommand = "cmd /C ";
+    strCommand += comm;
+    qDebug() << "strCommand = " << strCommand;
+    m_process->start(strCommand);
+}
+
+void MainWindow::sos()
+{
+
+    //Ui_Form *vol = new Ui_Form;
+    //vol->show();
+
+
+    // QStringList longerList = (QStringList() << str1 << str2 << str3);
+    QStringList arguments;
+    QFile textFile (qApp->applicationDirPath()+"/sos.ini");
+    if(textFile.open(QIODevice::ReadOnly| QIODevice::Text))
+    {
+        while (!textFile.atEnd()) {
+            QByteArray line = textFile.readLine();
+            line.chop(1);
+            //arguments << line;
+            qDebug() << "QStringList = " << line;
+            command(line);
+            //qDebug() << "QStringList = " << arguments.last();
+            //qDebug() << m_process->startDetached(line);
+            //m_process->start("adb shell /C", arguments.last());
+            //m_process->startDetached("cmd /C ");
+            break;
+            //arguments.removeFirst();
+            //m_process->finished();
+            //m_process->waitForFinished(3000);
+            //QByteArray result = m_process->readAll();
+            //qDebug() << "result = " << result;
+        }
+    } else {
+        arguments.append("can't open");
+    }
+
+    //qDebug() << arguments;
+
+    QString strCommand;
+    if(QSysInfo::productType()=="windows")
+        strCommand = "cmd /C ";
+    //strCommand += "sos.ini";
+
+    //m_process->start("cmd /C",arguments);
+    //m_process->start("adb", arguments);
+    qDebug() << "QStringList end = " << arguments;
+    //m_process->execute("adb",arguments);
+    //m_process->start("cmd", arguments);
+
+    infoLabel->setText(tr("Invoked <b>PreCondition Setting|SOS</b>"));
+}
+
+void MainWindow::acn()
+{
+    QString strCommand;
+    if(QSysInfo::productType()=="windows")
+        strCommand = "cmd /C ";
+    strCommand += "acn.cmd";
+    m_process->start(strCommand);
+
+    infoLabel->setText(tr("Invoked <b>PreCondition Setting|ACN</b>"));
+}
+
+void MainWindow::provision()
+{
+    QString strCommand;
+    if(QSysInfo::productType()=="windows")
+        strCommand = "cmd /C ";
+    strCommand += "tsp_provisiong.cmd";
+    m_process->start(strCommand);
+
+    infoLabel->setText(tr("Invoked <b>PreCondition Setting|Provisioning</b>"));
+}
+
+void MainWindow::svt()
+{
+    QString strCommand;
+    if(QSysInfo::productType()=="windows")
+        strCommand = "cmd /C ";
+    strCommand += "svt.cmd";
+    m_process->start(strCommand);
+
+    infoLabel->setText(tr("Invoked <b>PreCondition Setting|SVT</b>"));
+}
+
+void MainWindow::cust()
+{
+    QString strCommand;
+    if(QSysInfo::productType()=="windows")
+        strCommand = "cmd /C ";
+    strCommand += "cust.cmd";
+    m_process->start(strCommand);
+
+    infoLabel->setText(tr("Invoked <b>PreCondition Setting|CUST</b>"));
+}
+
+void MainWindow::dhc()
+{
+    QString strCommand;
+    if(QSysInfo::productType()=="windows")
+        strCommand = "cmd /C ";
+    strCommand += "dhc.cmd";
+    m_process->start(strCommand);
+
+    infoLabel->setText(tr("Invoked <b>PreCondition Setting|DHC</b>"));
+}
+
+void MainWindow::copy()
+{
+    infoLabel->setText(tr("Invoked <b>Edit|Copy</b>"));
+}
+
+void MainWindow::paste()
+{
+    infoLabel->setText(tr("Invoked <b>Edit|Paste</b>"));
+}
+
+void MainWindow::about()
+{
+    infoLabel->setText(tr("Invoked <b>Help|Release Note</b>"));
+
+    QString message;
+    QFile textFile (qApp->applicationDirPath()+"/release_note.txt");
+    if(textFile.open(QIODevice::ReadOnly| QIODevice::Text))
+    {
+        while (!textFile.atEnd()) {
+                  QByteArray line = textFile.readLine();
+                  message.append(line);
+        }
+    } else {
+        message ="can't open";
+    }
+    QMessageBox::about(this, tr("Release Note"), message);
+}
+
+void MainWindow::clearTextWindow()
+{
+    textEdit->clear();
+}
+
+void MainWindow::createActions()
+{
+    newAct = new QAction(tr("&New"), this);
+    newAct->setShortcuts(QKeySequence::New);
+    newAct->setStatusTip(tr("Create a new file"));
+    connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
+
+    openAct = new QAction(tr("&Open..."), this);
+    openAct->setShortcuts(QKeySequence::Open);
+    openAct->setStatusTip(tr("Open an existing file"));
+    connect(openAct, &QAction::triggered, this, &MainWindow::open);
+
+    saveAct = new QAction(tr("&Save"), this);
+    saveAct->setShortcuts(QKeySequence::Save);
+    saveAct->setStatusTip(tr("Save the document to disk"));
+    connect(saveAct, &QAction::triggered, this, &MainWindow::save);
+
+    printAct = new QAction(tr("&Print..."), this);
+    printAct->setShortcuts(QKeySequence::Print);
+    printAct->setStatusTip(tr("Print the document"));
+    connect(printAct, &QAction::triggered, this, &MainWindow::print);
+
+    exitAct = new QAction(tr("E&xit"), this);
+    exitAct->setShortcuts(QKeySequence::Quit);
+    exitAct->setStatusTip(tr("Exit the application"));
+    connect(exitAct, &QAction::triggered, this, &QWidget::close);
+
+    sosAct = new QAction(tr("&SOS"), this);
+    //sosAct->setShortcuts(QKeySequence::Undo);
+    sosAct->setStatusTip(tr("Run PreCondition setting about SOS"));
+    connect(sosAct, &QAction::triggered, this, &MainWindow::sos);
+
+    acnAct = new QAction(tr("&ACN"), this);
+    //acnAct->setShortcuts(QKeySequence::Redo);
+    acnAct->setStatusTip(tr("Run PreCondition setting about ACN"));
+    connect(acnAct, &QAction::triggered, this, &MainWindow::acn);
+
+    svtAct = new QAction(tr("&SVT"), this);
+    svtAct->setStatusTip(tr("Run PreCondition setting about SVT"));
+    connect(svtAct, &QAction::triggered, this, &MainWindow::svt);
+
+    provisionAct = new QAction(tr("&Provisioning"), this);
+    provisionAct->setStatusTip(tr("Run PreCondition setting about Provisioning"));
+    connect(provisionAct, &QAction::triggered, this, &MainWindow::provision);
+
+    custAct = new QAction(tr("&CUST"), this);
+    custAct->setStatusTip(tr("Run PreCondition setting about CUST"));
+    connect(custAct, &QAction::triggered, this, &MainWindow::cust);
+
+    dhcAct = new QAction(tr("&DHC"), this);
+    dhcAct->setStatusTip(tr("Run PreCondition setting about DHC"));
+    connect(dhcAct, &QAction::triggered, this, &MainWindow::dhc);
+
+    clearAct = new QAction(tr("&Clear Screen"), this);
+    clearAct->setStatusTip(tr("Clear Text Edit Screen"));
+    connect(clearAct, &QAction::triggered, this, &MainWindow::clearTextWindow);
+
+
+    copyAct = new QAction(tr("&Copy"), this);
+    copyAct->setShortcuts(QKeySequence::Copy);
+    copyAct->setStatusTip(tr("Copy the current selection's contents to the "
+                             "clipboard"));
+    connect(copyAct, &QAction::triggered, this, &MainWindow::copy);
+
+    aboutAct = new QAction(tr("&Relase Note"), this);
+    aboutAct->setStatusTip(tr("Show the applications Developed history"));
+    connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
+
+}
+
+void MainWindow::createMenus()
+{
+    /*
+    fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(newAct);
+    fileMenu->addAction(openAct);
+    fileMenu->addAction(saveAct);
+    fileMenu->addAction(printAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(exitAct);
+*/
+    settingMenu = menuBar()->addMenu(tr("&PreCondition Setting"));
+    settingMenu->addAction(sosAct);
+    settingMenu->addAction(acnAct);
+    settingMenu->addSeparator();
+
+    settingMenu->addAction(svtAct);
+    settingMenu->addAction(provisionAct);
+    settingMenu->addAction(custAct);
+    settingMenu->addAction(dhcAct);
+    //settingMenu->addAction(copyAct);
+    settingMenu->addSeparator();
+    settingMenu->addAction(clearAct);
+
+    helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(aboutAct);
+}
